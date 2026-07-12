@@ -1,10 +1,8 @@
-import { PageHeader } from "@/components/shared/page-header";
+import { StaffView } from "@/components/staff/staff-view";
+import { getStaffWithTodaysLoad } from "@/features/staff/queries";
 
 export default function StaffPage() {
-  return (
-    <PageHeader
-      title="Staff"
-      description="Manage team members, roles, and availability."
-    />
-  );
+  const staff = getStaffWithTodaysLoad();
+
+  return <StaffView initialStaff={staff} />;
 }
