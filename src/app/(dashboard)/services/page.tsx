@@ -1,10 +1,8 @@
-import { PageHeader } from "@/components/shared/page-header";
+import { ServicesView } from "@/components/services/services-view";
+import { getServices } from "@/features/services/queries";
 
 export default function ServicesPage() {
-  return (
-    <PageHeader
-      title="Services"
-      description="Manage the service menu, durations, and pricing."
-    />
-  );
+  const services = getServices();
+
+  return <ServicesView initialServices={services} />;
 }
