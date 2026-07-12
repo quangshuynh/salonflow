@@ -6,7 +6,7 @@ import {
   UserPlus,
 } from "lucide-react";
 
-import { StatCard } from "@/components/dashboard/stat-card";
+import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
