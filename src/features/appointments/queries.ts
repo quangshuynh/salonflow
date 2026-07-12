@@ -6,7 +6,7 @@ import {
 } from "@/lib/mock-data";
 import type { AppointmentWithRelations } from "@/types";
 
-function isSameLocalDay(a: Date, b: Date): boolean {
+export function isSameLocalDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
@@ -24,9 +24,15 @@ export function getAppointmentsWithRelations(): AppointmentWithRelations[] {
   });
 }
 
-export function getTodaysAppointments(): AppointmentWithRelations[] {
-  const today = new Date();
-  return getAppointmentsWithRelations()
-    .filter((appointment) => isSameLocalDay(new Date(appointment.startsAt), today))
+export function getAppointmentsForDay(
+  day: Date,
+  appointments: AppointmentWithRelations[] = getAppointmentsWithRelations()
+): AppointmentWithRelations[] {
+  return appointments
+    .filter((appointment) => isSameLocalDay(new Date(appointment.startsAt), day))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+}
+
+export function getTodaysAppointments(): AppointmentWithRelations[] {
+  return getAppointmentsForDay(new Date());
 }
