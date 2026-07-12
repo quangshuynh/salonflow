@@ -1,10 +1,8 @@
-import { PageHeader } from "@/components/shared/page-header";
+import { CustomersView } from "@/components/customers/customers-view";
+import { getCustomers } from "@/features/customers/queries";
 
 export default function CustomersPage() {
-  return (
-    <PageHeader
-      title="Customers"
-      description="Manage customer profiles and visit history."
-    />
-  );
+  const customers = getCustomers();
+
+  return <CustomersView initialCustomers={customers} />;
 }

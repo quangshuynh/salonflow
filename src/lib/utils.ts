@@ -13,6 +13,14 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(iso));
+}
+
 export function formatTime(iso: string): string {
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
