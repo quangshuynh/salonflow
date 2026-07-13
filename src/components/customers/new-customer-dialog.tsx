@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -23,21 +23,20 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { createCustomer } from "@/features/customers/actions";
 import {
   customerSchema,
   type CustomerFormValues,
 } from "@/lib/validations/customer";
 
-type NewCustomerDialogProps = {
-  onCreate: (values: CustomerFormValues) => void;
-};
-
-export function NewCustomerDialog({ onCreate }: NewCustomerDialogProps) {
+export function NewCustomerDialog() {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
   const {
     register,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -45,9 +44,15 @@ export function NewCustomerDialog({ onCreate }: NewCustomerDialogProps) {
   });
 
   function onSubmit(values: CustomerFormValues) {
-    onCreate(values);
-    reset();
-    setOpen(false);
+    startTransition(async () => {
+      const result = await createCustomer(values);
+      if (result.error) {
+        setError("root", { message: result.error });
+        return;
+      }
+      reset();
+      setOpen(false);
+    });
   }
 
   return (
@@ -98,12 +103,19 @@ export function NewCustomerDialog({ onCreate }: NewCustomerDialogProps) {
               />
               <FieldError errors={[errors.phone]} />
             </Field>
+            {errors.root && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.root.message}
+              </p>
+            )}
           </FieldGroup>
           <DialogFooter className="mt-6">
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button type="submit">Add customer</Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Adding..." : "Add customer"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

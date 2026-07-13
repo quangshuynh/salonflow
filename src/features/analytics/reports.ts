@@ -1,6 +1,10 @@
+import "server-only";
+
+import { isSameLocalDay } from "@/features/appointments/helpers";
 import { getAppointmentsWithRelations } from "@/features/appointments/queries";
-import { MOCK_STAFF } from "@/lib/mock-data";
-import type { Service, StaffMember } from "@/types";
+import { getStaff } from "@/features/staff/queries";
+import { getSupabaseEnv } from "@/lib/db/env";
+import type { AppointmentWithRelations, Service, StaffMember } from "@/types";
 
 export type DailyPerformance = {
   /** ISO date at local noon, safe to format in any timezone. */
@@ -21,31 +25,58 @@ function seededNoise(seed: number): number {
 /** Sun..Sat demand curve — salons peak Fri/Sat, slow early week. */
 const WEEKDAY_FACTOR = [0.35, 0.55, 0.7, 0.75, 0.9, 1.15, 1.3];
 
-/**
- * Mock daily revenue/appointment series for the trailing window.
- * Becomes a SQL aggregate over real appointments in Sprint 4.
- */
-export function getDailyPerformance(days = 28): DailyPerformance[] {
-  const series: DailyPerformance[] = [];
+function trailingDays(days: number): Date[] {
+  const result: Date[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const day = new Date();
     day.setHours(12, 0, 0, 0);
     day.setDate(day.getDate() - i);
+    result.push(day);
+  }
+  return result;
+}
 
+/** Demo-mode series: plausible synthetic history. */
+function getMockDailyPerformance(days: number): DailyPerformance[] {
+  return trailingDays(days).map((day) => {
     const dayIndex = Math.floor(day.getTime() / 86_400_000);
     const demand = 0.8 + seededNoise(dayIndex) * 0.4;
     const appointments = Math.round(
       10 * WEEKDAY_FACTOR[day.getDay()] * demand
     );
     const avgTicket = 55 + seededNoise(dayIndex * 7) * 30;
-
-    series.push({
+    return {
       date: day.toISOString(),
       revenue: Math.round(appointments * avgTicket),
       appointments,
-    });
-  }
-  return series;
+    };
+  });
+}
+
+/** Live mode: aggregate completed appointments per trailing day. */
+function aggregateDailyPerformance(
+  appointments: AppointmentWithRelations[],
+  days: number
+): DailyPerformance[] {
+  return trailingDays(days).map((day) => {
+    const completed = appointments.filter(
+      (a) =>
+        a.status === "completed" && isSameLocalDay(new Date(a.startsAt), day)
+    );
+    return {
+      date: day.toISOString(),
+      revenue: completed.reduce((sum, a) => sum + a.service.price, 0),
+      appointments: completed.length,
+    };
+  });
+}
+
+export async function getDailyPerformance(
+  days = 28
+): Promise<DailyPerformance[]> {
+  if (!getSupabaseEnv()) return getMockDailyPerformance(days);
+  const appointments = await getAppointmentsWithRelations();
+  return aggregateDailyPerformance(appointments, days);
 }
 
 export type ReportSummary = {
@@ -56,12 +87,12 @@ export type ReportSummary = {
   completionRate: number;
 };
 
-export function getReportSummary(days = 28): ReportSummary {
-  const series = getDailyPerformance(days);
+export async function getReportSummary(days = 28): Promise<ReportSummary> {
+  const series = await getDailyPerformance(days);
   const revenue = series.reduce((sum, day) => sum + day.revenue, 0);
   const appointments = series.reduce((sum, day) => sum + day.appointments, 0);
 
-  const finished = getAppointmentsWithRelations().filter((a) =>
+  const finished = (await getAppointmentsWithRelations()).filter((a) =>
     ["completed", "cancelled", "no-show"].includes(a.status)
   );
   const completed = finished.filter((a) => a.status === "completed").length;
@@ -80,10 +111,12 @@ export type ServicePerformanceAllTime = {
   revenue: number;
 };
 
-export function getTopServices(limit = 5): ServicePerformanceAllTime[] {
+export async function getTopServices(
+  limit = 5
+): Promise<ServicePerformanceAllTime[]> {
   const byService = new Map<string, ServicePerformanceAllTime>();
 
-  for (const appointment of getAppointmentsWithRelations()) {
+  for (const appointment of await getAppointmentsWithRelations()) {
     if (appointment.status === "cancelled" || appointment.status === "no-show") {
       continue;
     }
@@ -108,17 +141,23 @@ export type StaffPerformance = {
   revenue: number;
 };
 
-export function getStaffPerformance(): StaffPerformance[] {
-  const appointments = getAppointmentsWithRelations().filter(
+export async function getStaffPerformance(): Promise<StaffPerformance[]> {
+  const [staff, appointments] = await Promise.all([
+    getStaff(),
+    getAppointmentsWithRelations(),
+  ]);
+  const active = appointments.filter(
     (a) => a.status !== "cancelled" && a.status !== "no-show"
   );
 
-  return MOCK_STAFF.map((staff) => {
-    const own = appointments.filter((a) => a.staffId === staff.id);
-    return {
-      staff,
-      bookings: own.length,
-      revenue: own.reduce((sum, a) => sum + a.service.price, 0),
-    };
-  }).sort((a, b) => b.revenue - a.revenue);
+  return staff
+    .map((member) => {
+      const own = active.filter((a) => a.staffId === member.id);
+      return {
+        staff: member,
+        bookings: own.length,
+        revenue: own.reduce((sum, a) => sum + a.service.price, 0),
+      };
+    })
+    .sort((a, b) => b.revenue - a.revenue);
 }

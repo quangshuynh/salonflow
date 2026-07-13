@@ -19,7 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { CustomerFormValues } from "@/lib/validations/customer";
 import type { Customer } from "@/types";
 
 function initials(name: string): string {
@@ -31,12 +30,11 @@ function initials(name: string): string {
 }
 
 type CustomersViewProps = {
-  initialCustomers: Customer[];
+  customers: Customer[];
 };
 
-export function CustomersView({ initialCustomers }: CustomersViewProps) {
+export function CustomersView({ customers }: CustomersViewProps) {
   const router = useRouter();
-  const [customers, setCustomers] = useState(initialCustomers);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -49,27 +47,13 @@ export function CustomersView({ initialCustomers }: CustomersViewProps) {
     );
   }, [customers, query]);
 
-  function handleCreate(values: CustomerFormValues) {
-    // Mock-data stage: prepend locally so the new customer is visible.
-    // Becomes a Supabase insert in Sprint 4.
-    const customer: Customer = {
-      id: `cus-local-${Date.now()}`,
-      ...values,
-      createdAt: new Date().toISOString(),
-      lastVisit: null,
-      totalVisits: 0,
-      totalSpent: 0,
-    };
-    setCustomers((current) => [customer, ...current]);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Customers"
-        description={`${customers.length} customers in your directory.`}
+        description={`${customers.length} ${customers.length === 1 ? "customer" : "customers"} in your directory.`}
       >
-        <NewCustomerDialog onCreate={handleCreate} />
+        <NewCustomerDialog />
       </PageHeader>
 
       <div className="relative max-w-sm">

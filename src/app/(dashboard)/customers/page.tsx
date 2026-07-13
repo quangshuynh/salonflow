@@ -1,8 +1,8 @@
 import { CustomersView } from "@/components/customers/customers-view";
 import { getCustomers } from "@/features/customers/queries";
 
-export default function CustomersPage() {
-  const customers = getCustomers();
+export default async function CustomersPage() {
+  const customers = await getCustomers();
 
-  return <CustomersView initialCustomers={customers} />;
+  return <CustomersView customers={customers} />;
 }

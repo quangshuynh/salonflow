@@ -31,10 +31,10 @@ export default async function CustomerDetailPage(
   props: PageProps<"/customers/[id]">
 ) {
   const { id } = await props.params;
-  const customer = getCustomerById(id);
+  const customer = await getCustomerById(id);
   if (!customer) notFound();
 
-  const appointments = getCustomerAppointments(customer.id);
+  const appointments = await getCustomerAppointments(customer.id);
 
   return (
     <div className="flex flex-col gap-6">
