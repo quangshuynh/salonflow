@@ -30,16 +30,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createService } from "@/features/services/actions";
+import { createService, updateService } from "@/features/services/actions";
 import { SERVICE_CATEGORY_LABELS } from "@/features/services/constants";
 import {
   serviceSchema,
   type ServiceFormValues,
 } from "@/lib/validations/service";
+import type { Service } from "@/types";
 
-export function NewServiceDialog() {
-  const [open, setOpen] = useState(false);
+type ServiceDialogProps = {
+  /** When set, the dialog edits this service instead of creating one. */
+  service?: Service;
+  /** Controlled open state — used when opening from an external menu. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function ServiceDialog({
+  service,
+  open: controlledOpen,
+  onOpenChange,
+}: ServiceDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [pending, startTransition] = useTransition();
+
   const {
     register,
     control,
@@ -49,32 +65,45 @@ export function NewServiceDialog() {
     formState: { errors },
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
-    defaultValues: { name: "" },
+    defaultValues: service
+      ? {
+          name: service.name,
+          category: service.category,
+          durationMin: service.durationMin,
+          price: service.price,
+        }
+      : { name: "" },
   });
 
   function onSubmit(values: ServiceFormValues) {
     startTransition(async () => {
-      const result = await createService(values);
+      const result = service
+        ? await updateService(service.id, values)
+        : await createService(values);
       if (result.error) {
         setError("root", { message: result.error });
         return;
       }
-      reset();
+      reset(service ? values : undefined);
       setOpen(false);
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <Plus data-icon="inline-start" />
-        Add service
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger render={<Button />}>
+          <Plus data-icon="inline-start" />
+          Add service
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add service</DialogTitle>
+          <DialogTitle>{service ? "Edit service" : "Add service"}</DialogTitle>
           <DialogDescription>
-            Add a service to your menu with its duration and price.
+            {service
+              ? "Update this service's details, duration, or price."
+              : "Add a service to your menu with its duration and price."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -162,7 +191,7 @@ export function NewServiceDialog() {
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>
-              {pending ? "Adding..." : "Add service"}
+              {pending ? "Saving..." : service ? "Save changes" : "Add service"}
             </Button>
           </DialogFooter>
         </form>

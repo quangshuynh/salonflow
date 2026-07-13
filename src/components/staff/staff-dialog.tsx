@@ -30,13 +30,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createStaff } from "@/features/staff/actions";
+import { createStaff, updateStaff } from "@/features/staff/actions";
 import { STAFF_ROLE_LABELS } from "@/features/staff/constants";
 import { staffSchema, type StaffFormValues } from "@/lib/validations/staff";
+import type { StaffMember } from "@/types";
 
-export function NewStaffDialog() {
-  const [open, setOpen] = useState(false);
+type StaffDialogProps = {
+  /** When set, the dialog edits this staff member instead of creating one. */
+  staff?: StaffMember;
+  /** Controlled open state — used when opening from an external menu. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function StaffDialog({
+  staff,
+  open: controlledOpen,
+  onOpenChange,
+}: StaffDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [pending, startTransition] = useTransition();
+
   const {
     register,
     control,
@@ -46,32 +62,42 @@ export function NewStaffDialog() {
     formState: { errors },
   } = useForm<StaffFormValues>({
     resolver: zodResolver(staffSchema),
-    defaultValues: { name: "" },
+    defaultValues: staff
+      ? { name: staff.name, role: staff.role }
+      : { name: "" },
   });
 
   function onSubmit(values: StaffFormValues) {
     startTransition(async () => {
-      const result = await createStaff(values);
+      const result = staff
+        ? await updateStaff(staff.id, values)
+        : await createStaff(values);
       if (result.error) {
         setError("root", { message: result.error });
         return;
       }
-      reset();
+      reset(staff ? values : undefined);
       setOpen(false);
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <UserPlus data-icon="inline-start" />
-        Add staff member
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger render={<Button />}>
+          <UserPlus data-icon="inline-start" />
+          Add staff member
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add staff member</DialogTitle>
+          <DialogTitle>
+            {staff ? "Edit staff member" : "Add staff member"}
+          </DialogTitle>
           <DialogDescription>
-            Add a team member so you can assign them appointments.
+            {staff
+              ? "Update this team member's details."
+              : "Add a team member so you can assign them appointments."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -129,7 +155,11 @@ export function NewStaffDialog() {
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>
-              {pending ? "Adding..." : "Add staff member"}
+              {pending
+                ? "Saving..."
+                : staff
+                  ? "Save changes"
+                  : "Add staff member"}
             </Button>
           </DialogFooter>
         </form>

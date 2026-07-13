@@ -23,15 +23,31 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { createCustomer } from "@/features/customers/actions";
+import { createCustomer, updateCustomer } from "@/features/customers/actions";
 import {
   customerSchema,
   type CustomerFormValues,
 } from "@/lib/validations/customer";
+import type { Customer } from "@/types";
 
-export function NewCustomerDialog() {
-  const [open, setOpen] = useState(false);
+type CustomerDialogProps = {
+  /** When set, the dialog edits this customer instead of creating one. */
+  customer?: Customer;
+  /** Controlled open state — used when opening from an external button. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function CustomerDialog({
+  customer,
+  open: controlledOpen,
+  onOpenChange,
+}: CustomerDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [pending, startTransition] = useTransition();
+
   const {
     register,
     handleSubmit,
@@ -40,33 +56,42 @@ export function NewCustomerDialog() {
     formState: { errors },
   } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
-    defaultValues: { name: "", email: "", phone: "" },
+    defaultValues: customer
+      ? { name: customer.name, email: customer.email, phone: customer.phone }
+      : { name: "", email: "", phone: "" },
   });
 
   function onSubmit(values: CustomerFormValues) {
     startTransition(async () => {
-      const result = await createCustomer(values);
+      const result = customer
+        ? await updateCustomer(customer.id, values)
+        : await createCustomer(values);
       if (result.error) {
         setError("root", { message: result.error });
         return;
       }
-      reset();
+      reset(customer ? values : undefined);
       setOpen(false);
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <UserPlus data-icon="inline-start" />
-        New customer
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger render={<Button />}>
+          <UserPlus data-icon="inline-start" />
+          New customer
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>New customer</DialogTitle>
+          <DialogTitle>
+            {customer ? "Edit customer" : "New customer"}
+          </DialogTitle>
           <DialogDescription>
-            Add a customer to your directory. You can book their first
-            appointment afterwards.
+            {customer
+              ? "Update this customer's contact details."
+              : "Add a customer to your directory. You can book their first appointment afterwards."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -114,7 +139,11 @@ export function NewCustomerDialog() {
               Cancel
             </DialogClose>
             <Button type="submit" disabled={pending}>
-              {pending ? "Adding..." : "Add customer"}
+              {pending
+                ? "Saving..."
+                : customer
+                  ? "Save changes"
+                  : "Add customer"}
             </Button>
           </DialogFooter>
         </form>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarCheck, CalendarDays, DollarSign } from "lucide-react";
 
+import { CustomerActions } from "@/components/customers/customer-actions";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -49,7 +50,9 @@ export default async function CustomerDetailPage(
           <ArrowLeft data-icon="inline-start" />
           Customers
         </Button>
-        <PageHeader title={customer.name} description={customer.email} />
+        <PageHeader title={customer.name} description={customer.email}>
+          <CustomerActions customer={customer} />
+        </PageHeader>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
