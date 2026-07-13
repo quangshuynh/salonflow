@@ -212,6 +212,7 @@ export function NewAppointmentDialog({
                 <Input
                   id="appointment-date"
                   type="date"
+                  min={toDateInputValue(new Date())}
                   aria-invalid={!!errors.date}
                   {...register("date")}
                 />
