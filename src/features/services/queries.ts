@@ -1,28 +1,21 @@
-import {
-  SERVICE_CATEGORIES,
-  SERVICE_CATEGORY_LABELS,
-} from "@/features/services/constants";
+import "server-only";
+
+import { getSupabaseEnv } from "@/lib/db/env";
+import { mapService, type ServiceRow } from "@/lib/db/mappers";
 import { MOCK_SERVICES } from "@/lib/mock-data";
-import type { Service, ServiceCategory } from "@/types";
+import { createClient } from "@/lib/db/server";
+import type { Service } from "@/types";
 
-export function getServices(): Service[] {
-  return [...MOCK_SERVICES].sort((a, b) => a.name.localeCompare(b.name));
-}
+export async function getServices(): Promise<Service[]> {
+  if (!getSupabaseEnv()) {
+    return [...MOCK_SERVICES].sort((a, b) => a.name.localeCompare(b.name));
+  }
 
-export type ServiceGroup = {
-  category: ServiceCategory;
-  label: string;
-  services: Service[];
-};
-
-/**
- * Groups services into category sections in display order.
- * Pure so the client view can re-group after local inserts.
- */
-export function groupServicesByCategory(services: Service[]): ServiceGroup[] {
-  return SERVICE_CATEGORIES.map((category) => ({
-    category,
-    label: SERVICE_CATEGORY_LABELS[category],
-    services: services.filter((service) => service.category === category),
-  })).filter((group) => group.services.length > 0);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .order("name");
+  if (error) throw error;
+  return (data as ServiceRow[]).map(mapService);
 }

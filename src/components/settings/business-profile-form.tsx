@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { useForm } from "react-hook-form";
+
+import { updateBusinessProfile } from "@/features/settings/actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,9 +36,11 @@ export function BusinessProfileForm({
   defaultValues,
 }: BusinessProfileFormProps) {
   const [saved, setSaved] = useState(false);
+  const [pending, startTransition] = useTransition();
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isDirty },
     reset,
   } = useForm<BusinessProfileValues>({
@@ -45,11 +49,16 @@ export function BusinessProfileForm({
   });
 
   function onSubmit(values: BusinessProfileValues) {
-    // Mock-data stage: keep the values as the new form baseline.
-    // Becomes a Supabase update in Sprint 4.
-    reset(values);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    startTransition(async () => {
+      const result = await updateBusinessProfile(values);
+      if (result.error) {
+        setError("root", { message: result.error });
+        return;
+      }
+      reset(values);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
   }
 
   return (
@@ -106,14 +115,19 @@ export function BusinessProfileForm({
           </FieldGroup>
         </CardContent>
         <CardFooter className="mt-6 justify-end gap-3">
+          {errors.root && (
+            <p role="alert" className="text-sm text-destructive">
+              {errors.root.message}
+            </p>
+          )}
           {saved && (
             <span className="flex items-center gap-1 text-sm text-muted-foreground">
               <Check className="size-4" />
               Saved
             </span>
           )}
-          <Button type="submit" disabled={!isDirty}>
-            Save changes
+          <Button type="submit" disabled={!isDirty || pending}>
+            {pending ? "Saving..." : "Save changes"}
           </Button>
         </CardFooter>
       </form>

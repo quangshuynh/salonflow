@@ -7,12 +7,10 @@ import { NewAppointmentDialog } from "@/components/appointments/new-appointment-
 import { DayTimeline } from "@/components/calendar/day-timeline";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { buildLocalAppointment } from "@/features/appointments/build-appointment";
 import {
-  getAppointmentsForDay,
+  filterAppointmentsForDay,
   isSameLocalDay,
-} from "@/features/appointments/queries";
-import type { AppointmentFormValues } from "@/lib/validations/appointment";
+} from "@/features/appointments/helpers";
 import type {
   AppointmentWithRelations,
   Customer,
@@ -35,37 +33,25 @@ function addDays(date: Date, days: number): Date {
 }
 
 type CalendarViewProps = {
-  initialAppointments: AppointmentWithRelations[];
+  appointments: AppointmentWithRelations[];
   customers: Customer[];
   services: Service[];
   staff: StaffMember[];
 };
 
 export function CalendarView({
-  initialAppointments,
+  appointments,
   customers,
   services,
   staff,
 }: CalendarViewProps) {
-  const [appointments, setAppointments] = useState(initialAppointments);
   const [selectedDay, setSelectedDay] = useState(() => new Date());
 
   const dayAppointments = useMemo(
-    () => getAppointmentsForDay(selectedDay, appointments),
+    () => filterAppointmentsForDay(appointments, selectedDay),
     [appointments, selectedDay]
   );
   const isToday = isSameLocalDay(selectedDay, new Date());
-
-  function handleCreate(values: AppointmentFormValues) {
-    const appointment = buildLocalAppointment(values, {
-      customers,
-      services,
-      staff,
-    });
-    if (!appointment) return;
-    setAppointments((current) => [...current, appointment]);
-    setSelectedDay(new Date(appointment.startsAt));
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -78,7 +64,7 @@ export function CalendarView({
           services={services}
           staff={staff}
           defaultDate={selectedDay}
-          onCreate={handleCreate}
+          onBooked={(startsAt) => setSelectedDay(startsAt)}
         />
       </PageHeader>
 
@@ -109,7 +95,9 @@ export function CalendarView({
         </Button>
         <h2 className="ml-2 text-sm font-medium">
           {formatDayLabel(selectedDay)}
-          {isToday && <span className="ml-1.5 text-muted-foreground">· Today</span>}
+          {isToday && (
+            <span className="ml-1.5 text-muted-foreground">· Today</span>
+          )}
         </h2>
         <p className="ml-auto text-sm text-muted-foreground">
           {dayAppointments.length}{" "}

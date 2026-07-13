@@ -25,11 +25,13 @@ import {
 } from "@/features/analytics/reports";
 import { formatCurrency } from "@/lib/utils";
 
-export default function ReportsPage() {
-  const summary = getReportSummary();
-  const series = getDailyPerformance();
-  const topServices = getTopServices();
-  const staffPerformance = getStaffPerformance();
+export default async function ReportsPage() {
+  const [summary, series, topServices, staffPerformance] = await Promise.all([
+    getReportSummary(),
+    getDailyPerformance(),
+    getTopServices(),
+    getStaffPerformance(),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
