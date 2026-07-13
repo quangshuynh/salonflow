@@ -2,7 +2,7 @@
 
 import { UserCog } from "lucide-react";
 
-import { NewStaffDialog } from "@/components/staff/new-staff-dialog";
+import { StaffDialog } from "@/components/staff/staff-dialog";
 import { StaffCard } from "@/components/staff/staff-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -19,7 +19,7 @@ export function StaffView({ staff }: StaffViewProps) {
         title="Staff"
         description={`${staff.length} ${staff.length === 1 ? "team member" : "team members"}.`}
       >
-        <NewStaffDialog />
+        <StaffDialog />
       </PageHeader>
 
       {staff.length === 0 ? (

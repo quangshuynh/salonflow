@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Users } from "lucide-react";
 
-import { NewCustomerDialog } from "@/components/customers/new-customer-dialog";
+import { CustomerDialog } from "@/components/customers/customer-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -53,7 +53,7 @@ export function CustomersView({ customers }: CustomersViewProps) {
         title="Customers"
         description={`${customers.length} ${customers.length === 1 ? "customer" : "customers"} in your directory.`}
       >
-        <NewCustomerDialog />
+        <CustomerDialog />
       </PageHeader>
 
       <div className="relative max-w-sm">

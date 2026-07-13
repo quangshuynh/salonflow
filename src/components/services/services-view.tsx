@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { Scissors } from "lucide-react";
 
-import { NewServiceDialog } from "@/components/services/new-service-dialog";
+import { ServiceDialog } from "@/components/services/service-dialog";
+import { ServiceRowActions } from "@/components/services/service-row-actions";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +39,7 @@ export function ServicesView({ services }: ServicesViewProps) {
         title="Services"
         description={`${services.length} ${services.length === 1 ? "service" : "services"} on your menu.`}
       >
-        <NewServiceDialog />
+        <ServiceDialog />
       </PageHeader>
 
       {groups.length === 0 ? (
@@ -63,6 +64,7 @@ export function ServicesView({ services }: ServicesViewProps) {
                     <TableHead>Service</TableHead>
                     <TableHead className="text-right">Duration</TableHead>
                     <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -76,6 +78,9 @@ export function ServicesView({ services }: ServicesViewProps) {
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {formatCurrency(service.price)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <ServiceRowActions service={service} />
                       </TableCell>
                     </TableRow>
                   ))}
