@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CalendarClock, Search } from "lucide-react";
 
 import { NewAppointmentDialog } from "@/components/appointments/new-appointment-dialog";
+import { StatusMenu } from "@/components/appointments/status-menu";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -162,7 +163,13 @@ export function AppointmentsView({
                       {formatCurrency(appointment.service.price)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <StatusBadge status={appointment.status} />
+                      <div className="flex items-center justify-end gap-1">
+                        <StatusBadge status={appointment.status} />
+                        <StatusMenu
+                          appointmentId={appointment.id}
+                          status={appointment.status}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
