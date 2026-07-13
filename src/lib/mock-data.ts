@@ -18,6 +18,13 @@ function daysAgo(days: number): string {
   return dayAt(-days, 12);
 }
 
+export const MOCK_BUSINESS = {
+  name: "Glow & Co. Beauty Studio",
+  email: "hello@glowandco.example.com",
+  phone: "(555) 010-2030",
+  address: "123 Main St, San Jose, CA 95112",
+};
+
 export const MOCK_SERVICES: Service[] = [
   { id: "srv-1", name: "Women's Haircut", category: "hair", durationMin: 45, price: 55 },
   { id: "srv-2", name: "Full Color", category: "hair", durationMin: 90, price: 120 },
