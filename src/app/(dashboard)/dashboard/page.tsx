@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   CalendarClock,
   CalendarPlus,
@@ -44,7 +45,7 @@ export default function DashboardPage() {
         title="Dashboard"
         description="Overview of today's appointments, revenue, and activity."
       >
-        <Button>
+        <Button nativeButton={false} render={<Link href="/calendar" />}>
           <CalendarPlus data-icon="inline-start" />
           New appointment
         </Button>

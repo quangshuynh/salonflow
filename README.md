@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SalonFlow
 
-## Getting Started
+A salon management platform for hair salons, barbershops, nail salons,
+spas, and beauty studios — scheduling, customers, staff, services, and
+revenue reporting in one dashboard.
 
-First, run the development server:
+**Status:** UI-complete on mock data. Supabase persistence is next
+(see [docs/supabase-setup.md](docs/supabase-setup.md)).
 
-```bash
+## Stack
+
+- [Next.js 16](https://nextjs.org) (App Router, Turbopack)
+- TypeScript, Tailwind CSS 4
+- [shadcn/ui](https://ui.shadcn.com) (Nova style, built on Base UI)
+- React Hook Form + Zod
+- Recharts
+- Supabase (PostgreSQL + auth) — groundwork in place
+
+## Getting started
+
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the marketing
+site, or [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+for the app. Everything runs on mock data — no environment setup needed.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` | Production build + type check |
+| `npm run lint` | ESLint |
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/
+    (marketing)/   Landing page — public site
+    (dashboard)/   The app: dashboard, calendar, appointments,
+                   customers, staff, services, reports, settings
+  components/      UI by domain (ui/ is shadcn-generated)
+  features/        Business logic: queries, constants, builders
+  lib/             Clients, validations, mock data, utils
+  types/           Domain types
+supabase/
+  migrations/      SQL schema (multi-tenant + RLS)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Conventions worth knowing before contributing are in
+[AGENTS.md](AGENTS.md); pages fetch data via `features/*/queries.ts` and
+assemble components — business logic never lives in page files.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Git workflow
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`main` ← `dev` ← `feature/*` branches, PRs into `dev`.
