@@ -34,10 +34,12 @@ import {
 import { getTodaysAppointments } from "@/features/appointments/queries";
 import { formatCurrency, formatTime } from "@/lib/utils";
 
-export default function DashboardPage() {
-  const stats = getDashboardStats();
-  const appointments = getTodaysAppointments();
-  const topServices = getTopServicesToday();
+export default async function DashboardPage() {
+  const [stats, appointments, topServices] = await Promise.all([
+    getDashboardStats(),
+    getTodaysAppointments(),
+    getTopServicesToday(),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">

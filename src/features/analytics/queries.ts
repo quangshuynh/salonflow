@@ -1,5 +1,7 @@
-import { MOCK_CUSTOMERS } from "@/lib/mock-data";
+import "server-only";
+
 import { getTodaysAppointments } from "@/features/appointments/queries";
+import { getCustomers } from "@/features/customers/queries";
 import type { Service } from "@/types";
 
 export type DashboardStats = {
@@ -9,8 +11,11 @@ export type DashboardStats = {
   newCustomersThisWeek: number;
 };
 
-export function getDashboardStats(): DashboardStats {
-  const todays = getTodaysAppointments();
+export async function getDashboardStats(): Promise<DashboardStats> {
+  const [todays, customers] = await Promise.all([
+    getTodaysAppointments(),
+    getCustomers(),
+  ]);
   const active = todays.filter(
     (a) => a.status !== "cancelled" && a.status !== "no-show"
   );
@@ -26,7 +31,7 @@ export function getDashboardStats(): DashboardStats {
 
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
-  const newCustomersThisWeek = MOCK_CUSTOMERS.filter(
+  const newCustomersThisWeek = customers.filter(
     (c) => new Date(c.createdAt) >= weekAgo
   ).length;
 
@@ -44,10 +49,10 @@ export type ServicePerformance = {
   revenue: number;
 };
 
-export function getTopServicesToday(): ServicePerformance[] {
+export async function getTopServicesToday(): Promise<ServicePerformance[]> {
   const byService = new Map<string, ServicePerformance>();
 
-  for (const appointment of getTodaysAppointments()) {
+  for (const appointment of await getTodaysAppointments()) {
     if (appointment.status === "cancelled" || appointment.status === "no-show") {
       continue;
     }

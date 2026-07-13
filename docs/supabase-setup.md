@@ -13,9 +13,10 @@ variables are missing.
 
 ## 2. Apply the schema
 
-Open the project's **SQL Editor**, paste the contents of
-[`supabase/migrations/0001_initial_schema.sql`](../supabase/migrations/0001_initial_schema.sql),
-and run it.
+Open the project's **SQL Editor** and run each migration in
+[`supabase/migrations/`](../supabase/migrations/) in filename order
+(`0001_initial_schema.sql`, then `0002_signup_rpc.sql` — the signup flow
+fails without 0002).
 
 Alternatively, with the Supabase CLI:
 
@@ -38,8 +39,10 @@ Copy `.env.example` to `.env.local` and fill in both values from
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
+
+(The legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` name also works.)
 
 Restart `npm run dev` afterwards — Next.js only reads env files at startup.
 

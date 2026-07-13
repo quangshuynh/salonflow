@@ -1,8 +1,8 @@
 import { ServicesView } from "@/components/services/services-view";
 import { getServices } from "@/features/services/queries";
 
-export default function ServicesPage() {
-  const services = getServices();
+export default async function ServicesPage() {
+  const services = await getServices();
 
-  return <ServicesView initialServices={services} />;
+  return <ServicesView services={services} />;
 }

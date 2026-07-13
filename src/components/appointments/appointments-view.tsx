@@ -24,12 +24,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { buildLocalAppointment } from "@/features/appointments/build-appointment";
 import {
   APPOINTMENT_STATUSES,
   APPOINTMENT_STATUS_LABELS,
 } from "@/features/appointments/constants";
-import type { AppointmentFormValues } from "@/lib/validations/appointment";
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
 import type {
   AppointmentStatus,
@@ -45,19 +43,18 @@ const STATUS_FILTER_ITEMS: Record<string, string> = {
 };
 
 type AppointmentsViewProps = {
-  initialAppointments: AppointmentWithRelations[];
+  appointments: AppointmentWithRelations[];
   customers: Customer[];
   services: Service[];
   staff: StaffMember[];
 };
 
 export function AppointmentsView({
-  initialAppointments,
+  appointments,
   customers,
   services,
   staff,
 }: AppointmentsViewProps) {
-  const [appointments, setAppointments] = useState(initialAppointments);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<AppointmentStatus | "all">("all");
 
@@ -74,28 +71,17 @@ export function AppointmentsView({
       .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
   }, [appointments, query, status]);
 
-  function handleCreate(values: AppointmentFormValues) {
-    const appointment = buildLocalAppointment(values, {
-      customers,
-      services,
-      staff,
-    });
-    if (!appointment) return;
-    setAppointments((current) => [...current, appointment]);
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Appointments"
-        description={`${appointments.length} appointments on the books.`}
+        description={`${appointments.length} ${appointments.length === 1 ? "appointment" : "appointments"} on the books.`}
       >
         <NewAppointmentDialog
           customers={customers}
           services={services}
           staff={staff}
           defaultDate={new Date()}
-          onCreate={handleCreate}
         />
       </PageHeader>
 
@@ -134,7 +120,11 @@ export function AppointmentsView({
         <EmptyState
           icon={CalendarClock}
           title="No appointments found"
-          description="Try a different search or status filter."
+          description={
+            appointments.length === 0
+              ? "Book your first appointment to get started."
+              : "Try a different search or status filter."
+          }
         />
       ) : (
         <Card className="py-0">
