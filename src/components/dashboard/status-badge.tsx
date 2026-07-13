@@ -1,18 +1,22 @@
 import { Badge } from "@/components/ui/badge";
+import { APPOINTMENT_STATUS_LABELS } from "@/features/appointments/constants";
 import type { AppointmentStatus } from "@/types";
 
-const STATUS_CONFIG: Record<
+const STATUS_VARIANTS: Record<
   AppointmentStatus,
-  { label: string; variant: React.ComponentProps<typeof Badge>["variant"] }
+  React.ComponentProps<typeof Badge>["variant"]
 > = {
-  pending: { label: "Pending", variant: "outline" },
-  confirmed: { label: "Confirmed", variant: "default" },
-  completed: { label: "Completed", variant: "secondary" },
-  cancelled: { label: "Cancelled", variant: "destructive" },
-  "no-show": { label: "No-show", variant: "destructive" },
+  pending: "outline",
+  confirmed: "default",
+  completed: "secondary",
+  cancelled: "destructive",
+  "no-show": "destructive",
 };
 
 export function StatusBadge({ status }: { status: AppointmentStatus }) {
-  const { label, variant } = STATUS_CONFIG[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  return (
+    <Badge variant={STATUS_VARIANTS[status]}>
+      {APPOINTMENT_STATUS_LABELS[status]}
+    </Badge>
+  );
 }

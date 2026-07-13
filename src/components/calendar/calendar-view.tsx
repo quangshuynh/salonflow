@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { NewAppointmentDialog } from "@/components/appointments/new-appointment-dialog";
 import { DayTimeline } from "@/components/calendar/day-timeline";
-import { NewAppointmentDialog } from "@/components/calendar/new-appointment-dialog";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
+import { buildLocalAppointment } from "@/features/appointments/build-appointment";
 import {
   getAppointmentsForDay,
   isSameLocalDay,
@@ -56,31 +57,14 @@ export function CalendarView({
   const isToday = isSameLocalDay(selectedDay, new Date());
 
   function handleCreate(values: AppointmentFormValues) {
-    const customer = customers.find((c) => c.id === values.customerId);
-    const service = services.find((s) => s.id === values.serviceId);
-    const member = staff.find((s) => s.id === values.staffId);
-    if (!customer || !service || !member) return;
-
-    const startsAt = new Date(`${values.date}T${values.time}`);
-    const endsAt = new Date(
-      startsAt.getTime() + service.durationMin * 60_000
-    );
-
-    // Mock-data stage: insert locally. Becomes a Supabase insert in Sprint 4.
-    const appointment: AppointmentWithRelations = {
-      id: `apt-local-${Date.now()}`,
-      customerId: customer.id,
-      staffId: member.id,
-      serviceId: service.id,
-      startsAt: startsAt.toISOString(),
-      endsAt: endsAt.toISOString(),
-      status: "confirmed",
-      customer,
-      staff: member,
-      service,
-    };
+    const appointment = buildLocalAppointment(values, {
+      customers,
+      services,
+      staff,
+    });
+    if (!appointment) return;
     setAppointments((current) => [...current, appointment]);
-    setSelectedDay(startsAt);
+    setSelectedDay(new Date(appointment.startsAt));
   }
 
   return (
