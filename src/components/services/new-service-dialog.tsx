@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -30,23 +30,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createService } from "@/features/services/actions";
 import { SERVICE_CATEGORY_LABELS } from "@/features/services/constants";
 import {
   serviceSchema,
   type ServiceFormValues,
 } from "@/lib/validations/service";
 
-type NewServiceDialogProps = {
-  onCreate: (values: ServiceFormValues) => void;
-};
-
-export function NewServiceDialog({ onCreate }: NewServiceDialogProps) {
+export function NewServiceDialog() {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
   const {
     register,
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceSchema),
@@ -54,9 +53,15 @@ export function NewServiceDialog({ onCreate }: NewServiceDialogProps) {
   });
 
   function onSubmit(values: ServiceFormValues) {
-    onCreate(values);
-    reset();
-    setOpen(false);
+    startTransition(async () => {
+      const result = await createService(values);
+      if (result.error) {
+        setError("root", { message: result.error });
+        return;
+      }
+      reset();
+      setOpen(false);
+    });
   }
 
   return (
@@ -146,12 +151,19 @@ export function NewServiceDialog({ onCreate }: NewServiceDialogProps) {
                 <FieldError errors={[errors.price]} />
               </Field>
             </div>
+            {errors.root && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.root.message}
+              </p>
+            )}
           </FieldGroup>
           <DialogFooter className="mt-6">
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button type="submit">Add service</Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Adding..." : "Add service"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

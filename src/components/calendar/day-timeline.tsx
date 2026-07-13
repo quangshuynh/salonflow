@@ -11,7 +11,7 @@ import {
   minutesIntoDay,
   minutesToOffsetPx,
 } from "@/components/calendar/constants";
-import { isSameLocalDay } from "@/features/appointments/queries";
+import { isSameLocalDay } from "@/features/appointments/helpers";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { AppointmentWithRelations, StaffMember } from "@/types";
 

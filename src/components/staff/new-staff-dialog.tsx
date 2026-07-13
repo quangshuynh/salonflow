@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -30,20 +30,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createStaff } from "@/features/staff/actions";
 import { STAFF_ROLE_LABELS } from "@/features/staff/constants";
 import { staffSchema, type StaffFormValues } from "@/lib/validations/staff";
 
-type NewStaffDialogProps = {
-  onCreate: (values: StaffFormValues) => void;
-};
-
-export function NewStaffDialog({ onCreate }: NewStaffDialogProps) {
+export function NewStaffDialog() {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
   const {
     register,
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<StaffFormValues>({
     resolver: zodResolver(staffSchema),
@@ -51,9 +50,15 @@ export function NewStaffDialog({ onCreate }: NewStaffDialogProps) {
   });
 
   function onSubmit(values: StaffFormValues) {
-    onCreate(values);
-    reset();
-    setOpen(false);
+    startTransition(async () => {
+      const result = await createStaff(values);
+      if (result.error) {
+        setError("root", { message: result.error });
+        return;
+      }
+      reset();
+      setOpen(false);
+    });
   }
 
   return (
@@ -113,12 +118,19 @@ export function NewStaffDialog({ onCreate }: NewStaffDialogProps) {
               />
               <FieldError errors={[errors.role]} />
             </Field>
+            {errors.root && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.root.message}
+              </p>
+            )}
           </FieldGroup>
           <DialogFooter className="mt-6">
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button type="submit">Add staff member</Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Adding..." : "Add staff member"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

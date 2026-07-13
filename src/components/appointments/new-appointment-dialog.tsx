@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarPlus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createAppointment } from "@/features/appointments/actions";
 import {
   appointmentSchema,
   type AppointmentFormValues,
@@ -81,7 +82,8 @@ type NewAppointmentDialogProps = {
   services: Service[];
   staff: StaffMember[];
   defaultDate: Date;
-  onCreate: (values: AppointmentFormValues) => void;
+  /** Called after a successful booking with the booked start time. */
+  onBooked?: (startsAt: Date) => void;
 };
 
 export function NewAppointmentDialog({
@@ -89,9 +91,10 @@ export function NewAppointmentDialog({
   services,
   staff,
   defaultDate,
-  onCreate,
+  onBooked,
 }: NewAppointmentDialogProps) {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   const customerItems = useMemo(
     () => Object.fromEntries(customers.map((c) => [c.id, c.name])),
@@ -114,6 +117,7 @@ export function NewAppointmentDialog({
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentSchema),
@@ -121,9 +125,16 @@ export function NewAppointmentDialog({
   });
 
   function onSubmit(values: AppointmentFormValues) {
-    onCreate(values);
-    reset({ date: values.date, time: "" });
-    setOpen(false);
+    startTransition(async () => {
+      const result = await createAppointment(values);
+      if (result.error) {
+        setError("root", { message: result.error });
+        return;
+      }
+      reset({ date: values.date, time: "" });
+      setOpen(false);
+      onBooked?.(new Date(`${values.date}T${values.time}`));
+    });
   }
 
   return (
@@ -220,12 +231,19 @@ export function NewAppointmentDialog({
                 <FieldError errors={[errors.time]} />
               </Field>
             </div>
+            {errors.root && (
+              <p role="alert" className="text-sm text-destructive">
+                {errors.root.message}
+              </p>
+            )}
           </FieldGroup>
           <DialogFooter className="mt-6">
             <DialogClose render={<Button variant="outline" />}>
               Cancel
             </DialogClose>
-            <Button type="submit">Book appointment</Button>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Booking..." : "Book appointment"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
