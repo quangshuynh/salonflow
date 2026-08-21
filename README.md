@@ -1,5 +1,10 @@
 # SalonFlow
 
+<p align="center">
+  <a href="https://github.com/quangshuynh/salonflow/actions/workflows/ci.yml"><img src="https://github.com/quangshuynh/salonflow/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/Next.js-16.2.10-black?logo=next.js" alt="Next.js 16.2.10" />
+</p>
+
 A salon management platform for hair salons, barbershops, nail salons,
 spas, and beauty studios — scheduling, customers, staff, services, and
 revenue reporting in one dashboard.
@@ -74,6 +79,8 @@ These screenshots show the main workflow and product surface.
 | `npm run dev` | Dev server with hot reload |
 | `npm run build` | Production build + type check |
 | `npm run lint` | ESLint |
+| `npm test` | Run automated tests |
+| `npm run test:watch` | Run tests in watch mode |
 
 ## Project structure
 
