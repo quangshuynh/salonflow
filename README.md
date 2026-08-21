@@ -1,7 +1,7 @@
 # SalonFlow
 
 A salon management platform for hair salons, barbershops, nail salons,
-spas, and beauty studios — scheduling, customers, staff, services, and
+spas, and beauty studios. There's scheduling, customers, staff, services, and
 revenue reporting in one dashboard.
 
 **Status:** UI-complete on mock data. Supabase persistence is next
