@@ -14,7 +14,7 @@ revenue reporting in one dashboard.
 - [shadcn/ui](https://ui.shadcn.com) (Nova style, built on Base UI)
 - React Hook Form + Zod
 - Recharts
-- Supabase (PostgreSQL + auth) — groundwork in place
+- Supabase (PostgreSQL + auth)
 
 ## Getting started
 
