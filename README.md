@@ -91,7 +91,7 @@ supabase/
   migrations/      SQL schema (multi-tenant + RLS)
 ```
 
-Pages fetch data via `features/*/queries.ts` and assemble components — business
+Pages fetch data via `features/*/queries.ts` and assemble components - business
 logic never lives in page files.
 
 ## Git workflow
