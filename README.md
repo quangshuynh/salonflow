@@ -27,6 +27,46 @@ Open [http://localhost:3000](http://localhost:3000) for the marketing
 site, or [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
 for the app. Everything runs on mock data — no environment setup needed.
 
+To demo the app while keeping Supabase configured, add this to `.env.local`:
+
+```env
+NEXT_PUBLIC_DEMO_MODE=true
+```
+
+This forces the dashboard and its related pages to use the built-in mock data
+and skips Supabase authentication. Remove the setting or change it to `false`
+to use the connected Supabase project again. Mock dates are generated relative
+to the current day, so screenshots continue to show a realistic schedule.
+
+## Screenshots
+
+These screenshots show the main workflow and product surface.
+
+<p align="center">
+  <img src="docs/images/marketing-home.png" alt="SalonFlow marketing homepage" width="900" />
+</p>
+<p align="center"><em>Marketing homepage</em></p>
+
+<p align="center">
+  <img src="docs/images/dashboard-overview.png" alt="SalonFlow dashboard overview with today's schedule and top services" width="900" />
+</p>
+<p align="center"><em>Dashboard overview</em></p>
+
+<p align="center">
+  <img src="docs/images/calendar-week.png" alt="SalonFlow calendar showing scheduled appointments" width="900" />
+</p>
+<p align="center"><em>Calendar and appointment planning</em></p>
+
+<p align="center">
+  <img src="docs/images/customers-list.png" alt="SalonFlow customer management screen" width="900" />
+</p>
+<p align="center"><em>Customer management</em></p>
+
+<p align="center">
+  <img src="docs/images/reports-overview.png" alt="SalonFlow reports showing revenue and service performance" width="900" />
+</p>
+<p align="center"><em>Reports and business insights</em></p>
+
 ## Scripts
 
 | Command | What it does |
@@ -51,9 +91,8 @@ supabase/
   migrations/      SQL schema (multi-tenant + RLS)
 ```
 
-Conventions worth knowing before contributing are in
-[AGENTS.md](AGENTS.md); pages fetch data via `features/*/queries.ts` and
-assemble components — business logic never lives in page files.
+Pages fetch data via `features/*/queries.ts` and assemble components — business
+logic never lives in page files.
 
 ## Git workflow
 

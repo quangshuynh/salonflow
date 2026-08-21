@@ -7,6 +7,8 @@
  * inlines them statically into client bundles.
  */
 export function getSupabaseEnv(): { url: string; key: string } | null {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") return null;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
