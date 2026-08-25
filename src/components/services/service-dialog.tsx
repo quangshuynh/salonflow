@@ -106,13 +106,14 @@ export function ServiceDialog({
               : "Add a service to your menu with its duration and price."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="service-name">Name</FieldLabel>
               <Input
                 id="service-name"
                 placeholder="Gel Manicure"
+                required
                 aria-invalid={!!errors.name}
                 {...register("name")}
               />

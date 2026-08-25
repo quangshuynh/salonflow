@@ -77,6 +77,8 @@ NEXT_PUBLIC_DEMO_MODE=true
 ```
 
 Demo mode uses the built-in mock data and skips Supabase authentication.
+The dashboard header shows a "Demo data" badge while it is active, so the
+interface makes clear up front that changes are not persisted.
 
 Remove the setting or change it to `false` to use the configured
 Supabase integration.

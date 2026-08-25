@@ -53,17 +53,18 @@ const TIERS: Tier[] = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="border-t bg-muted/30">
-      <div className="mx-auto w-full max-w-5xl px-6 py-20">
+    <section id="pricing" className="scroll-mt-14 border-t bg-muted/30">
+      <div className="mx-auto w-full max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight">
+          <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
             Simple pricing that scales with your chairs
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Every plan starts with a 14-day free trial. No card required.
+          <p className="mt-3 text-pretty text-muted-foreground">
+            Planned plans for launch. Billing isn&apos;t live yet — every
+            feature below is open in the demo.
           </p>
         </div>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:mt-12 sm:gap-6 lg:grid-cols-3">
           {TIERS.map((tier) => (
             <div
               key={tier.name}
@@ -72,7 +73,7 @@ export function PricingSection() {
                 tier.highlighted && "border-primary shadow-sm"
               )}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h3 className="font-medium">{tier.name}</h3>
                 {tier.highlighted && <Badge>Most popular</Badge>}
               </div>
@@ -85,10 +86,11 @@ export function PricingSection() {
               <p className="mt-2 text-sm text-muted-foreground">
                 {tier.description}
               </p>
-              <ul className="mt-6 flex flex-col gap-2.5 text-sm">
+              {/* Grows so the CTA sits on a shared baseline across tiers. */}
+              <ul className="mt-6 flex flex-1 flex-col gap-2.5 text-sm">
                 {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2">
-                    <Check className="size-4 shrink-0 text-primary" />
+                  <li key={feature} className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                     {feature}
                   </li>
                 ))}
@@ -98,8 +100,9 @@ export function PricingSection() {
                 variant={tier.highlighted ? "default" : "outline"}
                 nativeButton={false}
                 render={<Link href="/dashboard" />}
+                aria-label={`Explore the demo — ${tier.name} plan`}
               >
-                Start free trial
+                Explore the demo
               </Button>
             </div>
           ))}

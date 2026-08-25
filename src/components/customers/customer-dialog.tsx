@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -94,13 +95,15 @@ export function CustomerDialog({
               : "Add a customer to your directory. You can book their first appointment afterwards."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="customer-name">Name</FieldLabel>
               <Input
                 id="customer-name"
                 placeholder="Emily Chen"
+                autoComplete="name"
+                required
                 aria-invalid={!!errors.name}
                 {...register("name")}
               />
@@ -112,6 +115,8 @@ export function CustomerDialog({
                 id="customer-email"
                 type="email"
                 placeholder="emily@example.com"
+                autoComplete="email"
+                required
                 aria-invalid={!!errors.email}
                 {...register("email")}
               />
@@ -123,10 +128,15 @@ export function CustomerDialog({
                 id="customer-phone"
                 type="tel"
                 placeholder="(555) 123-4567"
+                autoComplete="tel"
+                required
                 aria-invalid={!!errors.phone}
                 {...register("phone")}
               />
               <FieldError errors={[errors.phone]} />
+              <FieldDescription>
+                Used for appointment reminders.
+              </FieldDescription>
             </Field>
             {errors.root && (
               <p role="alert" className="text-sm text-destructive">

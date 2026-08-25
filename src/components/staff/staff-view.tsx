@@ -27,7 +27,11 @@ export function StaffView({ staff }: StaffViewProps) {
           icon={UserCog}
           title="No staff yet"
           description="Add your first team member to start assigning appointments."
-        />
+        >
+          <div className="mt-2">
+            <StaffDialog />
+          </div>
+        </EmptyState>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {staff.map((member) => (

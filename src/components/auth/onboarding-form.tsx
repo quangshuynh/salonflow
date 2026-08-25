@@ -49,13 +49,15 @@ export function OnboardingForm({ defaultName }: { defaultName?: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Set up your business</CardTitle>
+        <CardTitle>
+          <h1>Set up your business</h1>
+        </CardTitle>
         <CardDescription>
           One last step — tell us about your salon.
         </CardDescription>
       </CardHeader>
       <CardContent className="mt-6">
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="onboarding-name">Your name</FieldLabel>

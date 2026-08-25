@@ -70,7 +70,15 @@ export function StatusMenu({ appointmentId, status }: StatusMenuProps) {
             const action = TRANSITION_ACTIONS[next];
             if (!action) return null;
             return (
-              <DropdownMenuItem key={next} onClick={() => apply(next)}>
+              <DropdownMenuItem
+                key={next}
+                variant={
+                  next === "cancelled" || next === "no-show"
+                    ? "destructive"
+                    : "default"
+                }
+                onClick={() => apply(next)}
+              >
                 <action.icon />
                 {action.label}
               </DropdownMenuItem>

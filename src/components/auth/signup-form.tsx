@@ -52,9 +52,11 @@ export function SignupForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MailCheck className="size-5 text-primary" />
-            Check your email
+          <CardTitle>
+            <h1 className="flex items-center gap-2">
+              <MailCheck className="size-5 text-primary" aria-hidden />
+              Check your email
+            </h1>
           </CardTitle>
           <CardDescription>
             We sent you a confirmation link. After confirming, sign in and
@@ -78,13 +80,15 @@ export function SignupForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
+        <CardTitle>
+          <h1>Create your account</h1>
+        </CardTitle>
         <CardDescription>
-          Start your 14-day free trial. No card required.
+          Set up your salon and start managing your schedule.
         </CardDescription>
       </CardHeader>
       <CardContent className="mt-6">
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="signup-name">Your name</FieldLabel>

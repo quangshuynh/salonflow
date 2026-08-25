@@ -49,19 +49,25 @@ const FEATURES: { icon: LucideIcon; title: string; description: string }[] = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="mx-auto w-full max-w-5xl px-6 py-20">
+    <section
+      id="features"
+      className="mx-auto w-full max-w-5xl scroll-mt-14 px-4 py-16 sm:px-6 sm:py-20"
+    >
       <div className="mx-auto max-w-xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
           Everything the front desk does, in one tab
         </h2>
-        <p className="mt-3 text-muted-foreground">
+        <p className="mt-3 text-pretty text-muted-foreground">
           SalonFlow replaces the paper book, the spreadsheet, and the group
           chat.
         </p>
       </div>
-      <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {FEATURES.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="rounded-xl border p-5">
+          <div
+            key={title}
+            className="rounded-xl border p-5 transition-colors hover:border-foreground/20"
+          >
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Icon className="size-4.5" />
             </div>

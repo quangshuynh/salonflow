@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -56,7 +57,12 @@ function SelectField({
 }: SelectFieldProps) {
   return (
     <Select items={items} value={value ?? null} onValueChange={onChange}>
-      <SelectTrigger id={id} className="w-full" aria-invalid={invalid}>
+      <SelectTrigger
+        id={id}
+        className="w-full"
+        aria-required
+        aria-invalid={invalid}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
@@ -150,7 +156,7 @@ export function NewAppointmentDialog({
             Book a service for a customer with a staff member.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="appointment-customer">Customer</FieldLabel>
@@ -212,6 +218,7 @@ export function NewAppointmentDialog({
                 <Input
                   id="appointment-date"
                   type="date"
+                  required
                   min={toDateInputValue(new Date())}
                   aria-invalid={!!errors.date}
                   {...register("date")}
@@ -223,6 +230,7 @@ export function NewAppointmentDialog({
                 <Input
                   id="appointment-time"
                   type="time"
+                  required
                   min="08:00"
                   max="18:45"
                   step={900}
@@ -232,6 +240,9 @@ export function NewAppointmentDialog({
                 <FieldError errors={[errors.time]} />
               </Field>
             </div>
+            <FieldDescription>
+              Opening hours are 8:00 AM to 7:00 PM, in 15-minute slots.
+            </FieldDescription>
             {errors.root && (
               <p role="alert" className="text-sm text-destructive">
                 {errors.root.message}

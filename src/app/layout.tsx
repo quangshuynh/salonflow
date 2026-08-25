@@ -15,13 +15,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const APP_DESCRIPTION =
+  "Salon management platform for salons, barber shops, spas, and beauty studios.";
+
 export const metadata: Metadata = {
   title: {
-    default: "SalonFlow",
+    default: "SalonFlow — Salon management, one screen",
     template: "%s · SalonFlow",
   },
-  description:
-    "Salon management platform for salons, barber shops, spas, and beauty studios.",
+  description: APP_DESCRIPTION,
+  applicationName: "SalonFlow",
+  openGraph: {
+    type: "website",
+    siteName: "SalonFlow",
+    title: "SalonFlow — Salon management, one screen",
+    description: APP_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: "SalonFlow — Salon management, one screen",
+    description: APP_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Scissors } from "lucide-react";
 
-import { APP_NAME } from "@/lib/constants";
+import { BrandLogo } from "@/components/shared/brand-logo";
 
 export default function AuthLayout({
   children,
@@ -9,14 +8,19 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 px-6 py-12">
-      <Link href="/" className="flex items-center gap-2 font-semibold">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <Scissors className="size-4" />
-        </span>
-        {APP_NAME}
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 px-4 py-12 sm:px-6">
+      {/*
+        At this size the logo's own wordmark is legible, so it stands alone
+        rather than repeating the product name beside it.
+      */}
+      <Link
+        href="/"
+        aria-label="SalonFlow home"
+        className="rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        <BrandLogo size={64} decorative className="rounded-xl" />
       </Link>
-      <div className="w-full max-w-sm">{children}</div>
+      <main className="w-full max-w-sm">{children}</main>
     </div>
   );
 }
