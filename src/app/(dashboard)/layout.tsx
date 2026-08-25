@@ -34,12 +34,25 @@ export default async function DashboardLayout({
     };
   }
 
+  // Mutations are unavailable without Supabase, so the UI says so up front
+  // instead of surfacing it as an error after the user submits a form.
+  const demoMode = !getSupabaseEnv();
+
   return (
     <SidebarProvider>
+      <a
+        href="#dashboard-content"
+        className="sr-only rounded-lg bg-background px-3 py-2 text-sm font-medium ring-3 ring-ring/50 focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50"
+      >
+        Skip to content
+      </a>
       <AppSidebar />
       <SidebarInset>
-        <SiteHeader user={user} />
-        <div className="flex flex-1 flex-col p-4 lg:p-6">{children}</div>
+        <SiteHeader user={user} demoMode={demoMode} />
+        {/* SidebarInset is already the <main> landmark; this is its target. */}
+        <div id="dashboard-content" className="flex flex-1 flex-col p-4 lg:p-6">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

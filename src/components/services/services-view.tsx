@@ -47,7 +47,11 @@ export function ServicesView({ services }: ServicesViewProps) {
           icon={Scissors}
           title="No services yet"
           description="Add your first service so appointments have something to book."
-        />
+        >
+          <div className="mt-2">
+            <ServiceDialog />
+          </div>
+        </EmptyState>
       ) : (
         groups.map((group) => (
           <Card key={group.category}>
@@ -64,7 +68,9 @@ export function ServicesView({ services }: ServicesViewProps) {
                     <TableHead>Service</TableHead>
                     <TableHead className="text-right">Duration</TableHead>
                     <TableHead className="text-right">Price</TableHead>
-                    <TableHead className="w-10" />
+                    <TableHead className="w-10">
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

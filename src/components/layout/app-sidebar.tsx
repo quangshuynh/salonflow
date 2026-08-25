@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Scissors } from "lucide-react";
 
+import { BrandLogo } from "@/components/shared/brand-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -17,12 +17,16 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { APP_NAME, NAV_GROUPS, SETTINGS_NAV } from "@/lib/constants";
+import {
+  APP_NAME,
+  NAV_GROUPS,
+  SETTINGS_NAV,
+  isNavItemActive,
+} from "@/lib/constants";
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => isNavItemActive(href, pathname);
 
   return (
     <Sidebar collapsible="icon">
@@ -30,9 +34,8 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Scissors className="size-4" />
-              </div>
+              {/* Reads as an app icon at this size; the name sits beside it. */}
+              <BrandLogo size={32} decorative />
               <div className="grid flex-1 text-left leading-tight">
                 <span className="truncate font-semibold">{APP_NAME}</span>
                 <span className="truncate text-xs text-muted-foreground">
@@ -55,7 +58,14 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       tooltip={item.title}
                       isActive={isActive(item.href)}
-                      render={<Link href={item.href} />}
+                      render={
+                        <Link
+                          href={item.href}
+                          aria-current={
+                            isActive(item.href) ? "page" : undefined
+                          }
+                        />
+                      }
                     >
                       <item.icon />
                       <span>{item.title}</span>
@@ -74,7 +84,14 @@ export function AppSidebar() {
             <SidebarMenuButton
               tooltip={SETTINGS_NAV.title}
               isActive={isActive(SETTINGS_NAV.href)}
-              render={<Link href={SETTINGS_NAV.href} />}
+              render={
+                <Link
+                  href={SETTINGS_NAV.href}
+                  aria-current={
+                    isActive(SETTINGS_NAV.href) ? "page" : undefined
+                  }
+                />
+              }
             >
               <SETTINGS_NAV.icon />
               <span>{SETTINGS_NAV.title}</span>

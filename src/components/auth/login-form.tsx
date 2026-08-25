@@ -47,11 +47,13 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
+        <CardTitle>
+          <h1>Sign in</h1>
+        </CardTitle>
         <CardDescription>Welcome back to your salon.</CardDescription>
       </CardHeader>
       <CardContent className="mt-6">
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="login-email">Email</FieldLabel>

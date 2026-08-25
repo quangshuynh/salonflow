@@ -7,6 +7,7 @@ import {
   UserPlus,
 } from "lucide-react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatCard } from "@/components/shared/stat-card";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { PageHeader } from "@/components/shared/page-header";
@@ -32,7 +33,7 @@ import {
   getTopServicesToday,
 } from "@/features/analytics/queries";
 import { getTodaysAppointments } from "@/features/appointments/queries";
-import { formatCurrency, formatTime } from "@/lib/utils";
+import { formatCurrency, formatTime, getInitials } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const [stats, appointments, topServices] = await Promise.all([
@@ -89,48 +90,67 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-24">Time</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead className="hidden md:table-cell">Staff</TableHead>
-                  <TableHead className="text-right">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {appointments.map((appointment) => (
-                  <TableRow key={appointment.id}>
-                    <TableCell className="font-medium tabular-nums">
-                      {formatTime(appointment.startsAt)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-7">
-                          <AvatarFallback className="text-xs">
-                            {appointment.customer.name
-                              .split(" ")
-                              .map((part) => part[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{appointment.customer.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {appointment.service.name}
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {appointment.staff.name}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <StatusBadge status={appointment.status} />
-                    </TableCell>
+            {appointments.length === 0 ? (
+              <EmptyState
+                icon={CalendarClock}
+                title="Nothing booked today"
+                description="Today's appointments will appear here as they're booked."
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  nativeButton={false}
+                  render={<Link href="/calendar" />}
+                >
+                  Open the calendar
+                </Button>
+              </EmptyState>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-24">Time</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead className="hidden sm:table-cell">
+                      Service
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Staff
+                    </TableHead>
+                    <TableHead className="text-right">Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {appointments.map((appointment) => (
+                    <TableRow key={appointment.id}>
+                      <TableCell className="font-medium tabular-nums">
+                        {formatTime(appointment.startsAt)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="size-7">
+                            <AvatarFallback className="text-xs" aria-hidden>
+                              {getInitials(appointment.customer.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{appointment.customer.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground sm:table-cell">
+                        {appointment.service.name}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground md:table-cell">
+                        {appointment.staff.name}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <StatusBadge status={appointment.status} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
@@ -140,6 +160,11 @@ export default async function DashboardPage() {
             <CardDescription>Ranked by booked revenue.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {topServices.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No services booked today yet.
+              </p>
+            )}
             {topServices.map(({ service, bookings, revenue }) => (
               <div
                 key={service.id}

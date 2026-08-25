@@ -38,7 +38,10 @@ export function ServiceRowActions({ service }: { service: Service }) {
             <Pencil />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
             <Trash2 />
             Delete
           </DropdownMenuItem>

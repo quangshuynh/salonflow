@@ -72,7 +72,14 @@ type DayTimelineProps = {
 
 export function DayTimeline({ day, staff, appointments }: DayTimelineProps) {
   return (
-    <div className="overflow-x-auto rounded-xl border">
+    // Focusable so the horizontally scrolling timeline is reachable by
+    // keyboard on narrow screens.
+    <div
+      role="region"
+      aria-label="Day timeline by staff member"
+      tabIndex={0}
+      className="overflow-x-auto rounded-xl border outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+    >
       <div
         className="grid min-w-fit"
         style={{
@@ -87,7 +94,7 @@ export function DayTimeline({ day, staff, appointments }: DayTimelineProps) {
             className="flex items-center gap-2 border-b border-l bg-card px-3 py-2.5"
           >
             <Avatar className="size-6">
-              <AvatarFallback className="text-[10px]">
+              <AvatarFallback className="text-[10px]" aria-hidden>
                 {member.initials}
               </AvatarFallback>
             </Avatar>

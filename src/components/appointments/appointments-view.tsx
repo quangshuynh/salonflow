@@ -8,8 +8,10 @@ import { StatusMenu } from "@/components/appointments/status-menu";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -88,8 +90,16 @@ export function AppointmentsView({
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative max-w-sm flex-1 basis-56">
-          <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Label htmlFor="appointment-search" className="sr-only">
+            Search appointments by customer
+          </Label>
+          <Search
+            aria-hidden
+            className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
+            id="appointment-search"
+            type="search"
             placeholder="Search by customer..."
             className="pl-8"
             value={query}
@@ -118,15 +128,40 @@ export function AppointmentsView({
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState
-          icon={CalendarClock}
-          title="No appointments found"
-          description={
-            appointments.length === 0
-              ? "Book your first appointment to get started."
-              : "Try a different search or status filter."
-          }
-        />
+        appointments.length === 0 ? (
+          <EmptyState
+            icon={CalendarClock}
+            title="No appointments yet"
+            description="Book your first appointment to see it here."
+          >
+            <div className="mt-2">
+              <NewAppointmentDialog
+                customers={customers}
+                services={services}
+                staff={staff}
+                defaultDate={new Date()}
+              />
+            </div>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            icon={Search}
+            title="No matching appointments"
+            description="No appointments match the current search and status filter."
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => {
+                setQuery("");
+                setStatus("all");
+              }}
+            >
+              Clear filters
+            </Button>
+          </EmptyState>
+        )
       ) : (
         <Card className="py-0">
           <CardContent className="px-0">

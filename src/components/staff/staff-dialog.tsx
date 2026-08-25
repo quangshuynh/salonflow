@@ -100,13 +100,15 @@ export function StaffDialog({
               : "Add a team member so you can assign them appointments."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="staff-name">Name</FieldLabel>
               <Input
                 id="staff-name"
                 placeholder="Mai Tran"
+                required
+                autoComplete="name"
                 aria-invalid={!!errors.name}
                 {...register("name")}
               />

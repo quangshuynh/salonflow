@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, UserCog } from "lucide-react";
 
 import { NewAppointmentDialog } from "@/components/appointments/new-appointment-dialog";
 import { DayTimeline } from "@/components/calendar/day-timeline";
+import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,23 +94,41 @@ export function CalendarView({
         >
           Today
         </Button>
-        <h2 className="ml-2 text-sm font-medium">
+        <h2 className="ml-1 text-sm font-medium sm:ml-2">
           {formatDayLabel(selectedDay)}
           {isToday && (
             <span className="ml-1.5 text-muted-foreground">· Today</span>
           )}
         </h2>
-        <p className="ml-auto text-sm text-muted-foreground">
+        <p
+          aria-live="polite"
+          className="w-full text-sm text-muted-foreground sm:ml-auto sm:w-auto"
+        >
           {dayAppointments.length}{" "}
           {dayAppointments.length === 1 ? "appointment" : "appointments"}
         </p>
       </div>
 
-      <DayTimeline
-        day={selectedDay}
-        staff={staff}
-        appointments={dayAppointments}
-      />
+      {staff.length === 0 ? (
+        <EmptyState
+          icon={UserCog}
+          title="No staff to schedule"
+          description="Add a team member before booking appointments onto the calendar."
+        />
+      ) : (
+        <>
+          <DayTimeline
+            day={selectedDay}
+            staff={staff}
+            appointments={dayAppointments}
+          />
+          {dayAppointments.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground">
+              Nothing booked on {formatDayLabel(selectedDay)}.
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }

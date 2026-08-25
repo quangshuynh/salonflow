@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { badgeVariants } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,46 +17,61 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { signOut } from "@/features/auth/actions";
-import { APP_NAME, DASHBOARD_NAV } from "@/lib/constants";
+import { APP_NAME, getActiveNavItem } from "@/lib/constants";
+import { cn, getInitials } from "@/lib/utils";
 
 export type HeaderUser = {
   email: string;
   name: string;
 };
 
-function initials(name: string): string {
-  return (
-    name
-      .split(" ")
-      .map((part) => part[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?"
-  );
-}
+type SiteHeaderProps = {
+  user: HeaderUser | null;
+  /** Sample-data mode: mutations aren't persisted. */
+  demoMode?: boolean;
+};
 
-export function SiteHeader({ user }: { user: HeaderUser | null }) {
+export function SiteHeader({ user, demoMode = false }: SiteHeaderProps) {
   const pathname = usePathname();
   const [, startTransition] = useTransition();
-  const current = DASHBOARD_NAV.find(
-    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
-  );
+  const current = getActiveNavItem(pathname);
 
   const avatar = (
     <Avatar className="size-8">
-      <AvatarFallback>{user ? initials(user.name) : "SF"}</AvatarFallback>
+      <AvatarFallback aria-hidden>
+        {user ? getInitials(user.name) : "SF"}
+      </AvatarFallback>
     </Avatar>
   );
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <span className="text-sm font-medium">{current?.title ?? APP_NAME}</span>
+      <span className="truncate text-sm font-medium">
+        {current?.title ?? APP_NAME}
+      </span>
+      {demoMode && (
+        <Tooltip>
+          {/* A real button so the explanation is reachable by keyboard too. */}
+          <TooltipTrigger
+            className={cn(
+              badgeVariants({ variant: "secondary" }),
+              "hidden cursor-default sm:inline-flex"
+            )}
+          >
+            Demo data
+          </TooltipTrigger>
+          <TooltipContent>
+            Sample data for exploring the app. Changes aren&apos;t saved.
+          </TooltipContent>
+        </Tooltip>
+      )}
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
         {user ? (

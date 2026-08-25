@@ -35,19 +35,22 @@ export function StaffCard({ staff }: { staff: StaffWithTodaysLoad }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <Avatar className="size-12">
-            <AvatarFallback>{staff.initials}</AvatarFallback>
+            <AvatarFallback aria-hidden>{staff.initials}</AvatarFallback>
           </Avatar>
+          {/* Name and badges wrap instead of squeezing the name at narrow widths. */}
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium">{staff.name}</p>
-            <Badge variant="secondary" className="mt-1">
-              {STAFF_ROLE_LABELS[staff.role]}
-            </Badge>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <Badge variant="secondary">
+                {STAFF_ROLE_LABELS[staff.role]}
+              </Badge>
+              <Badge variant={workingToday ? "default" : "outline"}>
+                {workingToday ? "Working" : "Off today"}
+              </Badge>
+            </div>
           </div>
-          <Badge variant={workingToday ? "default" : "outline"}>
-            {workingToday ? "Working" : "Off today"}
-          </Badge>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -65,7 +68,10 @@ export function StaffCard({ staff }: { staff: StaffWithTodaysLoad }) {
                 <Pencil />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDeleteOpen(true)}>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+              >
                 <Trash2 />
                 Delete
               </DropdownMenuItem>

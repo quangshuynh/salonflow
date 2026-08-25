@@ -63,7 +63,7 @@ export function BusinessProfileForm({
 
   return (
     <Card>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={pending}>
         <CardHeader>
           <CardTitle>Business profile</CardTitle>
           <CardDescription>

@@ -1,15 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Search, Users } from "lucide-react";
 
 import { CustomerDialog } from "@/components/customers/customer-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -18,23 +20,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
 import type { Customer } from "@/types";
-
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
 
 type CustomersViewProps = {
   customers: Customer[];
 };
 
 export function CustomersView({ customers }: CustomersViewProps) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -57,8 +50,16 @@ export function CustomersView({ customers }: CustomersViewProps) {
       </PageHeader>
 
       <div className="relative max-w-sm">
-        <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Label htmlFor="customer-search" className="sr-only">
+          Search customers
+        </Label>
+        <Search
+          aria-hidden
+          className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
+          id="customer-search"
+          type="search"
           placeholder="Search by name or email..."
           className="pl-8"
           value={query}
@@ -67,15 +68,32 @@ export function CustomersView({ customers }: CustomersViewProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="No customers found"
-          description={
-            query
-              ? `No customers match "${query}". Try a different search.`
-              : "Add your first customer to get started."
-          }
-        />
+        query ? (
+          <EmptyState
+            icon={Search}
+            title="No matching customers"
+            description={`Nothing matches “${query}”. Try a different name or email.`}
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => setQuery("")}
+            >
+              Clear search
+            </Button>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            icon={Users}
+            title="No customers yet"
+            description="Add your first customer to start booking appointments."
+          >
+            <div className="mt-2">
+              <CustomerDialog />
+            </div>
+          </EmptyState>
+        )
       ) : (
         <Card className="py-0">
           <CardContent className="px-0">
@@ -93,21 +111,27 @@ export function CustomersView({ customers }: CustomersViewProps) {
               </TableHeader>
               <TableBody>
                 {filtered.map((customer) => (
+                  // The name is a real link; its overlay makes the whole row
+                  // clickable without losing keyboard access.
                   <TableRow
                     key={customer.id}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/customers/${customer.id}`)}
+                    className="relative cursor-pointer focus-within:bg-muted/50"
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="size-8">
-                          <AvatarFallback className="text-xs">
-                            {initials(customer.name)}
+                          <AvatarFallback className="text-xs" aria-hidden>
+                            {getInitials(customer.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <p className="truncate font-medium">
-                            {customer.name}
+                            <Link
+                              href={`/customers/${customer.id}`}
+                              className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:rounded-md focus-visible:after:ring-3 focus-visible:after:ring-ring/50"
+                            >
+                              {customer.name}
+                            </Link>
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
                             {customer.email}
