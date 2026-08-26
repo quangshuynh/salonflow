@@ -91,19 +91,32 @@ function startContainer() {
   docker(["rm", "-f", CONTAINER], { stdio: "ignore" });
 
   console.error(`Starting ${IMAGE} as ${CONTAINER}...`);
+  // No password, and none needed: the container publishes no port, psql runs
+  // inside it over the local socket, and `--rm` plus the teardown below means
+  // it never outlives the run. A fixed password here would be a credential
+  // literal in the repository for no security benefit.
   const started = docker([
     "run", "--rm", "-d",
     "--name", CONTAINER,
-    "-e", "POSTGRES_PASSWORD=postgres",
+    "-e", "POSTGRES_HOST_AUTH_METHOD=trust",
     IMAGE,
   ]);
   if (started.status !== 0) {
     throw new SuiteError(`Could not start container:\n${started.stderr}`);
   }
 
+  // Probe over TCP, not the socket. The image's entrypoint runs a temporary
+  // server on the socket while it initialises the cluster, then stops it and
+  // starts the real one — so a socket probe reports ready during init and the
+  // first query can land in the restart gap ("no such file or directory").
+  // The temporary server sets listen_addresses='', so TCP only answers once
+  // the real server is up. Still no published port: this runs inside.
   const deadline = Date.now() + READY_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    const ready = docker(["exec", CONTAINER, "pg_isready", "-U", "postgres", "-q"]);
+    const ready = docker([
+      "exec", CONTAINER,
+      "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-q",
+    ]);
     if (ready.status === 0) return;
     sleep(1000);
   }
