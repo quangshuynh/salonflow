@@ -16,6 +16,13 @@ export type ActionResult = { error?: string };
 /** Postgres foreign-key violation — the service has appointment history. */
 const FK_VIOLATION = "23503";
 
+/**
+ * RLS filters an invisible row out of an UPDATE or DELETE without raising, so
+ * a mutation aimed at another tenant reports zero rows rather than an error.
+ * Deliberately ambiguous: it must not reveal whether the row exists elsewhere.
+ */
+const NOT_FOUND = "That service no longer exists, or isn't yours to change.";
+
 export async function createService(
   values: ServiceFormValues
 ): Promise<ActionResult> {
@@ -51,7 +58,7 @@ export async function updateService(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("services")
     .update({
       name: parsed.data.name,
@@ -59,8 +66,11 @@ export async function updateService(
       duration_min: parsed.data.durationMin,
       price_cents: Math.round(parsed.data.price * 100),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: NOT_FOUND };
 
   revalidatePath("/services");
   return {};
@@ -73,7 +83,12 @@ export async function deleteService(id: string): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("services").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("services")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) {
     if (error.code === FK_VIOLATION) {
       return {
@@ -83,6 +98,8 @@ export async function deleteService(id: string): Promise<ActionResult> {
     }
     return { error: error.message };
   }
+  // Checked after the error branch so a restricted delete still reports why.
+  if (!data) return { error: NOT_FOUND };
 
   revalidatePath("/services");
   return {};

@@ -138,6 +138,18 @@ select test.eq(
   0::bigint,
   'updating tenant B''s business affects zero rows');
 
+select test.eq(
+  test.affected(format('update staff set name = %L where id = %L',
+                       'Renamed By A', :'STAFF_B')),
+  0::bigint,
+  'updating tenant B''s staff member affects zero rows');
+
+select test.eq(
+  test.affected(format('update services set name = %L where id = %L',
+                       'Renamed By A', :'SVC_B')),
+  0::bigint,
+  'updating tenant B''s service affects zero rows');
+
 -- ── Cross-tenant references are structurally impossible (0003) ───────────
 -- The appointments policy only checks business_id, so this row would have
 -- passed RLS. The composite foreign key is what rejects it.

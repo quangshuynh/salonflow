@@ -6,7 +6,11 @@ SalonFlow is a salon-management SaaS application built with Next.js and TypeScri
 
 It includes scheduling, customers, staff, services, reporting, a marketing site, and a realistic demo experience.
 
-The current major engineering milestone is moving one coherent domain at a time from mock data to authenticated Supabase persistence with database-enforced tenant isolation.
+Authenticated Supabase persistence exists. Customers is the proven vertical slice: real auth, tenant resolution from trusted state, persistent CRUD, and tenant isolation enforced by PostgreSQL RLS. The other domains share the same schema, policies, and conventions but have not been verified to the same standard.
+
+Migration `0003` additionally makes appointment references tenant-scoped, so a cross-tenant link is rejected by a foreign key even for a caller RLS does not constrain.
+
+The ongoing milestone is raising the remaining domains to that standard, one at a time.
 
 ## Current Priority
 
@@ -20,6 +24,8 @@ Prioritize:
 6. preserving demo mode
 
 Do not expand product scope before the persistence path is proven.
+
+Inspect the code before assuming a domain is or is not migrated.
 
 ## Architecture Rules
 
@@ -87,7 +93,14 @@ Current validation commands:
 npm run lint
 npm test
 npm run build
+npm run test:db
 ```
+
+`npm run test:db` runs the SQL suites in `supabase/tests/` against a real
+PostgreSQL (throwaway Docker container, or `DATABASE_URL`). Tenant isolation is
+proven there, against the real migrations and policies — not mocked at the
+application layer. Application tests should prove how the app interprets the
+database's answers, not restate what the SQL suite already establishes.
 
 Run the relevant checks after implementation.
 

@@ -15,6 +15,9 @@ import type { AppointmentStatus } from "@/types";
 
 export type ActionResult = { error?: string };
 
+/** Same answer whether the row never existed or belongs to another tenant. */
+const NOT_FOUND = "Appointment not found.";
+
 export async function createAppointment(
   values: AppointmentFormValues
 ): Promise<ActionResult> {
@@ -81,7 +84,7 @@ export async function updateAppointmentStatus(
     .eq("id", parsed.data.appointmentId)
     .maybeSingle();
   if (fetchError) return { error: fetchError.message };
-  if (!current) return { error: "Appointment not found." };
+  if (!current) return { error: NOT_FOUND };
 
   const allowed =
     APPOINTMENT_STATUS_TRANSITIONS[current.status as AppointmentStatus];
@@ -91,11 +94,16 @@ export async function updateAppointmentStatus(
     };
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("appointments")
     .update({ status: parsed.data.status })
-    .eq("id", parsed.data.appointmentId);
+    .eq("id", parsed.data.appointmentId)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  // The read above already rejects an invisible row; this covers the row
+  // disappearing between the two statements.
+  if (!data) return { error: NOT_FOUND };
 
   revalidatePath("/calendar");
   revalidatePath("/appointments");

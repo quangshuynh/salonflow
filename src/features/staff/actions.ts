@@ -13,6 +13,13 @@ export type ActionResult = { error?: string };
 /** Routes that render staff names or staff-linked appointments. */
 const STAFF_ROUTES = ["/staff", "/calendar", "/appointments", "/dashboard", "/reports"];
 
+/**
+ * RLS filters an invisible row out of an UPDATE or DELETE without raising, so
+ * a mutation aimed at another tenant reports zero rows rather than an error.
+ * Deliberately ambiguous: it must not reveal whether the row exists elsewhere.
+ */
+const NOT_FOUND = "That staff member no longer exists, or isn't yours to change.";
+
 export async function createStaff(
   values: StaffFormValues
 ): Promise<ActionResult> {
@@ -46,11 +53,14 @@ export async function updateStaff(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("staff")
     .update({ name: parsed.data.name, role: parsed.data.role })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: NOT_FOUND };
 
   STAFF_ROUTES.forEach((route) => revalidatePath(route));
   return {};
@@ -64,8 +74,14 @@ export async function deleteStaff(id: string): Promise<ActionResult> {
 
   const supabase = await createClient();
   // Cascades: the staff member's appointments are deleted with them.
-  const { error } = await supabase.from("staff").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("staff")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: NOT_FOUND };
 
   STAFF_ROUTES.forEach((route) => revalidatePath(route));
   return {};
