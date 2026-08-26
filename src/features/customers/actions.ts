@@ -14,6 +14,15 @@ import {
 
 export type ActionResult = { error?: string };
 
+/**
+ * RLS does not raise on rows the caller cannot see — it removes them from the
+ * statement's scope, so a cross-tenant update or delete reports success while
+ * changing nothing. Every mutation therefore returns the affected row and
+ * treats an empty result as a miss, which is what the caller actually needs
+ * to know. The tenant boundary itself is enforced in PostgreSQL, not here.
+ */
+const NOT_FOUND = "That customer no longer exists, or isn't yours to change.";
+
 export async function createCustomer(
   values: CustomerFormValues
 ): Promise<ActionResult> {
@@ -48,15 +57,18 @@ export async function updateCustomer(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("customers")
     .update({
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: NOT_FOUND };
 
   revalidatePath("/customers");
   revalidatePath(`/customers/${id}`);
@@ -70,9 +82,16 @@ export async function deleteCustomer(id: string): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
-  // Cascades: the customer's appointments are deleted with them.
-  const { error } = await supabase.from("customers").delete().eq("id", id);
+  // Cascades: the customer's appointments are deleted with them. Migration
+  // 0003 scopes that cascade to the owning business.
+  const { data, error } = await supabase
+    .from("customers")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: NOT_FOUND };
 
   revalidatePath("/customers");
   revalidatePath("/appointments");

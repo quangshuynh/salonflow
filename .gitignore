@@ -42,6 +42,8 @@ next-env.d.ts
 
 /.claude
 
+CONTEXT.md
+
 .env
 .env.local
 .env.development.local

@@ -25,9 +25,11 @@ SalonFlow is a salon-management SaaS application for scheduling appointments,
 managing customers, staff, and services, and tracking business performance from
 one dashboard.
 
-**Status:** The full product UI and workflows are implemented with realistic
-demo data. Supabase-backed persistence and authentication are the next major
-milestone. See [docs/supabase-setup.md](docs/supabase-setup.md).
+**Status:** The full product UI and workflows are implemented, and run either
+on realistic demo data or on authenticated Supabase persistence with
+tenant isolation enforced by PostgreSQL row-level security. Customers is the
+slice with automated proof of that boundary; see
+[docs/supabase-setup.md](docs/supabase-setup.md).
 
 ## Features
 
@@ -137,18 +139,18 @@ page components.
 
 ### Data layer
 
-The current product experience is backed by deterministic mock data.
+Each `features/*/queries.ts` module decides its data source once, at the
+boundary: deterministic mock data when Supabase is unconfigured or demo
+mode is on, and live Supabase otherwise. Domain components never see the
+difference, and a failed production read is never quietly replaced with
+mock data.
 
-The repository also contains Supabase migrations defining the groundwork
-for the persistent data model, including multi-tenant data isolation and
-row-level-security policies.
-
-The next major engineering milestone is completing the production path:
+With Supabase configured, the production path runs end to end:
 
 ``` text
 authenticate
     ↓
-load tenant
+resolve tenant from the caller's own profile row
     ↓
 read / mutate domain data
     ↓
@@ -159,8 +161,12 @@ enforce tenant boundaries with RLS
 reload with the same correct state
 ```
 
-Until that path is complete, the demo experience remains the primary
-supported way to explore SalonFlow.
+Tenant resolution never trusts a client-supplied identifier — it is read
+from the signed-in user's `profiles` row, which RLS restricts to
+`auth.uid()`. Cross-tenant reads and writes are rejected by PostgreSQL,
+not by application filtering, and appointments reference their customer,
+staff member, and service by `(business_id, id)` so a cross-tenant link
+cannot be created even by a caller that bypasses RLS entirely.
 
 ## Validation
 
@@ -172,10 +178,17 @@ easier to reuse as the persistent Supabase data path is completed.
 
 ## Testing and CI
 
-The project uses Vitest for automated testing.
+The project uses Vitest for application-level tests, and plain SQL suites
+for anything that claims a database guarantee.
 
-CI checks the application before changes are merged, including linting,
-automated tests, and the production build.
+Tenant isolation is not asserted against a mock. `npm run test:db` starts
+a throwaway PostgreSQL container, applies the real migrations in order,
+and runs the policies through both tenants as the `authenticated` role —
+covering scoped reads, refused cross-tenant writes, the derived
+`customer_stats` view, unauthenticated access, and the invariants that
+must hold even for a caller RLS does not constrain. The container is
+removed afterwards. Docker is the only requirement; set `DATABASE_URL` to
+run against an existing database instead.
 
 Run the checks locally with:
 
@@ -183,6 +196,7 @@ Run the checks locally with:
 npm run lint
 npm test
 npm run build
+npm run test:db
 ```
 
 ## Scripts
@@ -194,18 +208,22 @@ npm run build
   `npm run lint`         Run ESLint
   `npm test`             Run automated tests
   `npm run test:watch`   Run tests in watch mode
+  `npm run test:db`      Run the SQL/RLS suites against real PostgreSQL
 
 ## Current limitations
 
 SalonFlow is not presented as a production-ready SaaS product yet.
 
-The main current limitation is that the complete dashboard experience
-still uses mock data. Supabase schema and integration groundwork exist,
-but persistent CRUD, authentication, and end-to-end tenant isolation
-still need to be completed and verified.
+Authentication, persistence, and RLS-enforced tenant isolation are
+implemented across the domains, but Customers is the only slice with
+automated evidence behind those claims end to end, including a
+query-failure state and mutation results that distinguish a blocked
+cross-tenant write from a successful one. The other domains share the
+same schema, policies, and query conventions; they have not been
+verified to the same standard.
 
-This is intentionally the next development milestone rather than
-expanding the product with additional surface-area features.
+Extending that standard one domain at a time is the next milestone,
+rather than expanding the product with additional surface-area features.
 
 ## Development workflow
 
