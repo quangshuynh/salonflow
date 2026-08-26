@@ -12,6 +12,15 @@ import {
 
 export type ActionResult = { error?: string };
 
+/**
+ * Unlike the CRUD actions this target is never client-supplied — it is the
+ * caller's own business, resolved from their profile — so zero affected rows
+ * is not a not-found. It means that business stopped being reachable between
+ * resolving the profile and writing, which is a failed save.
+ */
+const SAVE_FAILED =
+  "Couldn't save your business profile. Sign out and back in, then try again.";
+
 export async function updateBusinessProfile(
   values: BusinessProfileValues
 ): Promise<ActionResult> {
@@ -22,7 +31,7 @@ export async function updateBusinessProfile(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("businesses")
     .update({
       name: parsed.data.name,
@@ -30,8 +39,11 @@ export async function updateBusinessProfile(
       phone: parsed.data.phone,
       address: parsed.data.address,
     })
-    .eq("id", await getBusinessId());
+    .eq("id", await getBusinessId())
+    .select("id")
+    .maybeSingle();
   if (error) return { error: error.message };
+  if (!data) return { error: SAVE_FAILED };
 
   revalidatePath("/settings");
   return {};

@@ -30,3 +30,20 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Applies the real migrations to a throwaway PostgreSQL container and
+      # runs the RLS suites against it. No npm install: the runner has no
+      # dependencies, and mocking this boundary would defeat its purpose.
+      - name: Tenant isolation (SQL)
+        run: npm run test:db
