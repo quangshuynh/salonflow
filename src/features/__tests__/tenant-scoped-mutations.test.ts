@@ -184,7 +184,7 @@ describe("domain-specific failures", () => {
     expect(result.error).toBe("Appointment not found.");
   });
 
-  it("reports not found when the appointment vanishes after the pre-read", async () => {
+  it("reports a stale view when the appointment vanishes after the pre-read", async () => {
     // The race the pre-read cannot cover: the row is visible when its status
     // is checked, then gone — a concurrent cascade delete — by the time the
     // update runs. Zero affected rows must not read as success.
@@ -196,7 +196,7 @@ describe("domain-specific failures", () => {
 
     const result = await updateAppointmentStatus(ID, "completed");
 
-    expect(result.error).toBe("Appointment not found.");
+    expect(result.error).toMatch(/changed or removed/);
   });
 
   it("still completes an appointment that is present for both statements", async () => {

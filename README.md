@@ -27,8 +27,8 @@ one dashboard.
 
 **Status:** The full product UI and workflows are implemented, and run either
 on realistic demo data or on authenticated Supabase persistence with
-tenant isolation enforced by PostgreSQL row-level security. Customers is the
-slice with automated proof of that boundary; see
+tenant isolation enforced by PostgreSQL row-level security. Customers and
+Appointments are the slices with automated proof of that boundary; see
 [docs/supabase-setup.md](docs/supabase-setup.md).
 
 ## Features
@@ -188,7 +188,10 @@ a throwaway PostgreSQL container, applies the real migrations in order,
 and runs the policies through both tenants as the `authenticated` role —
 covering scoped reads, refused cross-tenant writes, the derived
 `customer_stats` view, unauthenticated access, and the invariants that
-must hold even for a caller RLS does not constrain. The container is
+must hold even for a caller RLS does not constrain. The appointment suites
+add cross-tenant customer, staff, and service references on insert and
+update, all-or-nothing rollback of rejected writes, callers with no tenant,
+and a re-read of committed rows from a fresh connection. The container is
 removed afterwards. Docker is the only requirement; set `DATABASE_URL` to
 run against an existing database instead.
 
@@ -217,12 +220,18 @@ npm run test:db
 SalonFlow is not presented as a production-ready SaaS product yet.
 
 Authentication, persistence, and RLS-enforced tenant isolation are
-implemented across the domains, but Customers is the only slice with
-automated evidence behind those claims end to end, including a
-query-failure state and mutation results that distinguish a blocked
-cross-tenant write from a successful one. The other domains share the
-same schema, policies, and query conventions; they have not been
-verified to the same standard.
+implemented across the domains, but Customers and Appointments are the
+only slices with automated evidence behind those claims end to end,
+including a query-failure state and mutation results that distinguish a
+blocked cross-tenant write from a successful one. Staff, services,
+settings, and reports share the same schema, policies, and query
+conventions; they have not been verified to the same standard.
+
+Application tests exercise the server actions against a stubbed Supabase
+client, and the SQL suites exercise the database directly; nothing yet
+runs the app against a live PostgREST, so the embedded-relation query
+shape is covered only by the SQL equivalent. Appointment start times are
+parsed in the server's time zone.
 
 Extending that standard one domain at a time is the next milestone,
 rather than expanding the product with additional surface-area features.
