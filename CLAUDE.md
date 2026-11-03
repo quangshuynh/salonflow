@@ -6,7 +6,7 @@ SalonFlow is a salon-management SaaS application built with Next.js and TypeScri
 
 It includes scheduling, customers, staff, services, reporting, a marketing site, and a realistic demo experience.
 
-Authenticated Supabase persistence exists. Customers is the proven vertical slice: real auth, tenant resolution from trusted state, persistent CRUD, and tenant isolation enforced by PostgreSQL RLS. The other domains share the same schema, policies, and conventions but have not been verified to the same standard.
+Authenticated Supabase persistence exists. Customers and Appointments are the proven vertical slices: real auth, tenant resolution from trusted state, persistent CRUD, and tenant isolation enforced by PostgreSQL RLS. The other domains share the same schema, policies, and conventions but have not been verified to the same standard.
 
 Migration `0003` additionally makes appointment references tenant-scoped, so a cross-tenant link is rejected by a foreign key even for a caller RLS does not constrain.
 
