@@ -47,3 +47,6 @@ CONTEXT.md
 .env
 .env.local
 .env.development.local
+
+# generated promo-video work (brag skill output)
+/brag-output/
