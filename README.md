@@ -31,6 +31,15 @@ tenant isolation enforced by PostgreSQL row-level security. Customers and
 Appointments are the slices with automated proof of that boundary; see
 [docs/supabase-setup.md](docs/supabase-setup.md).
 
+<p align="center">
+  <img
+    src="docs/images/salonflow-promo.gif"
+    alt="SalonFlow product tour: dashboard, calendar booking, customers, staff, services, and revenue reports, shown on demo data"
+    width="900"
+  />
+</p>
+<p align="center"><em>A 20-second tour of the app, recorded on built-in demo data</em></p>
+
 ## Features
 
 - Dashboard with daily scheduling and business metrics
